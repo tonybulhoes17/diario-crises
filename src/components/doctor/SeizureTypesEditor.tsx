@@ -192,7 +192,7 @@ export function SeizureTypesEditor({ patientId }: Props) {
             <div className="w-10 h-10 rounded-lg bg-surface-muted border border-surface-border flex items-center justify-center text-ink flex-shrink-0">
               {option ? (
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-6 h-6">
-                  {(option.svg as React.ReactElement).props.children}
+                  {(option.svg as React.ReactElement<{ children: React.ReactNode }>).props.children}
                 </svg>
               ) : (
                 <span className="font-bold text-lg">{t.symbol}</span>
@@ -248,7 +248,7 @@ export function SeizureTypesEditor({ patientId }: Props) {
                     </span>
                   )}
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-6 h-6">
-                    {(option.svg as React.ReactElement).props.children}
+                    {(option.svg as React.ReactElement<{ children: React.ReactNode }>).props.children}
                   </svg>
                   <span className="text-xs font-medium leading-none">{option.label}</span>
                 </button>
@@ -274,7 +274,7 @@ export function SeizureTypesEditor({ patientId }: Props) {
                   const opt = SYMBOL_OPTIONS.find(s => s.value === selectedSymbol)
                   return opt ? (
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-6 h-6">
-                      {(opt.svg as React.ReactElement).props.children}
+                      {(opt.svg as React.ReactElement<{ children: React.ReactNode }>).props.children}
                     </svg>
                   ) : <span className="font-bold">{selectedSymbol}</span>
                 })()
