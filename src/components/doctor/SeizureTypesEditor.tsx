@@ -136,7 +136,7 @@ export function SeizureTypesEditor({ patientId }: Props) {
   useEffect(() => { fetchTypes() }, [fetchTypes])
 
   // Símbolos já em uso (para desabilitar duplicatas)
-  const usedSymbols = types.map(t => t.value)
+  const usedSymbols = types.map(t => t.symbol)
 
   const handleAdd = async () => {
     if (!newName.trim() || !selectedSymbol) {
