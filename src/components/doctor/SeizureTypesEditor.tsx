@@ -104,10 +104,10 @@ const PLUS_SVG = (
 function SymbolSVG({ value, className = 'w-6 h-6' }: { value: string; className?: string }) {
   const found = SYMBOL_OPTIONS.find(s => s.value === value)
   if (found) {
+    const svgEl = found.svg as React.ReactElement<{ children: React.ReactNode }>
     return (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={className}>
-        {/* Clonar o SVG filho do encontrado */}
-        {(found.svg as React.ReactElement).props.children}
+        {svgEl.props.children}
       </svg>
     )
   }
