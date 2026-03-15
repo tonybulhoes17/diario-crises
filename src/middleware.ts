@@ -12,13 +12,13 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           )
           supabaseResponse = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, options as Parameters<typeof supabaseResponse.cookies.set>[2])
           )
         },
       },
@@ -31,18 +31,15 @@ export async function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname
 
-  // Rotas públicas — sem autenticação necessária
   const publicRoutes = ['/login', '/instrucoes']
   const isPublic = publicRoutes.some(r => pathname.startsWith(r))
 
-  // Se não autenticado e rota privada → redireciona para login
   if (!user && !isPublic) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
-  // Se autenticado e está no login → redireciona conforme role
   if (user && pathname === '/login') {
     const { data: profile } = await supabase
       .from('profiles')
@@ -55,7 +52,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Se autenticado, verifica acesso à rota
   if (user && (pathname.startsWith('/doctor') || pathname.startsWith('/patient'))) {
     const { data: profile } = await supabase
       .from('profiles')
@@ -63,14 +59,12 @@ export async function middleware(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    // Paciente tentando acessar área da médica
     if (profile?.role === 'patient' && pathname.startsWith('/doctor')) {
       const url = request.nextUrl.clone()
       url.pathname = '/patient/agenda'
       return NextResponse.redirect(url)
     }
 
-    // Médica tentando acessar área do paciente
     if (profile?.role === 'doctor' && pathname.startsWith('/patient')) {
       const url = request.nextUrl.clone()
       url.pathname = '/doctor'
