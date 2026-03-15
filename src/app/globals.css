@@ -1,0 +1,259 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Nunito:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   VARIÁVEIS CSS — Tema Dra. Mônica Seixas
+   ============================================================ */
+:root {
+  --font-cormorant: 'Cormorant Garamond', Georgia, serif;
+  --font-nunito: 'Nunito', system-ui, sans-serif;
+
+  /* Cores principais */
+  --color-surface:      #f8f4ff;
+  --color-surface-card: #ffffff;
+  --color-surface-muted:#f0eaff;
+  --color-border:       #e2d9f5;
+
+  --color-lilac-500: #8b52f7;
+  --color-lilac-600: #7730ed;
+  --color-lilac-700: #651fd9;
+
+  --color-gold-400: #f9cf4a;
+  --color-gold-500: #e69d0c;
+  --color-gold-600: #c87807;
+
+  --color-ink:       #2d1b69;
+  --color-ink-muted: #6b5b9a;
+  --color-ink-light: #9b8cc0;
+
+  /* Sombras */
+  --shadow-card:    0 2px 20px rgba(139, 82, 247, 0.08);
+  --shadow-card-lg: 0 8px 40px rgba(139, 82, 247, 0.12);
+  --shadow-gold:    0 4px 20px rgba(230, 157, 12, 0.25);
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-nunito);
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================================
+   COMPONENTES REUTILIZÁVEIS
+   ============================================================ */
+@layer components {
+
+  /* Card padrão */
+  .card {
+    @apply bg-white rounded-2xl shadow-card border border-surface-border p-6;
+  }
+
+  .card-sm {
+    @apply bg-white rounded-xl shadow-card border border-surface-border p-4;
+  }
+
+  /* Botão primário — dourado */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2
+           bg-gradient-gold text-white font-semibold
+           px-6 py-3 rounded-xl shadow-gold
+           hover:opacity-90 active:scale-95
+           transition-all duration-200
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Botão secundário — lilás */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2
+           bg-lilac-100 text-lilac-700 font-semibold
+           px-6 py-3 rounded-xl
+           hover:bg-lilac-200 active:scale-95
+           transition-all duration-200
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Botão outline */
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2
+           bg-transparent border-2 border-lilac-300 text-lilac-700 font-semibold
+           px-6 py-3 rounded-xl
+           hover:bg-lilac-50 active:scale-95
+           transition-all duration-200
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Botão ghost */
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2
+           text-ink-muted font-medium
+           px-4 py-2 rounded-lg
+           hover:bg-surface-muted hover:text-ink active:scale-95
+           transition-all duration-200;
+  }
+
+  /* Input padrão */
+  .input {
+    @apply w-full px-4 py-3 rounded-xl
+           border border-surface-border bg-white
+           text-ink placeholder-ink-light
+           focus:outline-none focus:border-lilac-400 focus:ring-2 focus:ring-lilac-200
+           transition-all duration-200
+           font-body;
+  }
+
+  .input-error {
+    @apply border-red-400 focus:border-red-400 focus:ring-red-200;
+  }
+
+  /* Label */
+  .label {
+    @apply block text-sm font-semibold text-ink-muted mb-1.5;
+  }
+
+  /* Título de seção */
+  .section-title {
+    @apply font-display text-2xl font-semibold text-ink;
+  }
+
+  /* Badge */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  }
+
+  .badge-lilac {
+    @apply badge bg-lilac-100 text-lilac-700;
+  }
+
+  .badge-gold {
+    @apply badge bg-gold-100 text-gold-700;
+  }
+
+  .badge-green {
+    @apply badge bg-green-100 text-green-700;
+  }
+
+  .badge-red {
+    @apply badge bg-red-100 text-red-700;
+  }
+
+  /* Separador com gradiente */
+  .divider-gold {
+    @apply h-px w-full;
+    background: linear-gradient(90deg, transparent, #e69d0c, transparent);
+  }
+
+  /* Scrollbar personalizada */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-lilac-500) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: var(--color-lilac-500);
+    border-radius: 2px;
+  }
+}
+
+/* ============================================================
+   IMPRESSÃO
+   ============================================================ */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .print-page {
+    page-break-after: always;
+  }
+
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+  }
+}
+
+/* ============================================================
+   ANIMAÇÕES
+   ============================================================ */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f0eaff 25%, #e8e0f8 50%, #f0eaff 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+/* ============================================================
+   AGENDA — tabela mensal
+   ============================================================ */
+.agenda-table {
+  @apply w-full border-collapse;
+}
+
+.agenda-table th {
+  @apply bg-lilac-100 text-ink font-semibold text-sm py-3 px-2 text-center
+         border border-surface-border;
+}
+
+.agenda-table td {
+  @apply border border-surface-border py-2 px-2 text-sm align-top;
+  min-height: 48px;
+}
+
+.agenda-table tr:nth-child(even) td {
+  @apply bg-surface;
+}
+
+.agenda-table tr:hover td {
+  @apply bg-lilac-50;
+}
+
+/* Coluna do dia */
+.agenda-table td:first-child {
+  @apply text-center font-bold text-ink w-10;
+}
+
+/* ============================================================
+   PWA — Safe areas para iPhone com notch
+   ============================================================ */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
