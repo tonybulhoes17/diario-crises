@@ -40,7 +40,7 @@ export default function InstrucoesPage() {
         {/* Seção 2 — Como acessar */}
         <Section icon={Smartphone} title="Como acessar">
           <ol className="space-y-3 text-ink-muted">
-            <Step n={1}>Abra o link que sua médica enviou, ou acesse diretamente pelo endereço da plataforma.</Step>
+            <Step n={1}>Abra o link que sua médica enviou ou acesse diretamente pelo endereço da plataforma.</Step>
             <Step n={2}>Digite seu <strong className="text-ink">CPF</strong> (somente números ou no formato 000.000.000-00).</Step>
             <Step n={3}>Digite sua <strong className="text-ink">senha</strong> — fornecida pela Dra. Mônica.</Step>
             <Step n={4}>Clique em <strong className="text-ink">Entrar</strong>.</Step>
@@ -95,7 +95,7 @@ export default function InstrucoesPage() {
           <p className="text-ink-muted leading-relaxed">
             Se a crise ocorreu enquanto você estava dormindo, marque a opção{' '}
             <strong className="text-ink">&quot;Ocorreu durante o sono&quot;</strong> ao registrar.
-            Isso é muito importante para o diagnóstico da sua médica.
+            Isso é muito importante para o acompanhamento da sua médica.
           </p>
         </Section>
 
