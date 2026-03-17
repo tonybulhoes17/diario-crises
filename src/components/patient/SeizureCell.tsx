@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
-import { Plus } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Plus, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useToast } from '@/components/ui/Toast'
 import type { SeizureType, AgendaRow, Period } from '@/types'
@@ -36,11 +36,16 @@ interface SeizureCellProps {
   onSaved: () => void
 }
 
+const PERIOD_LABELS: Record<Period, string> = {
+  morning: 'Manhã',
+  afternoon: 'Tarde',
+  night: 'Noite',
+}
+
 export function SeizureCell({ row, period, patientId, seizureTypes, onSaved }: SeizureCellProps) {
   const [open, setOpen] = useState(false)
   const [duringSleep, setDuringSleep] = useState(false)
   const [saving, setSaving] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
   const supabase = createClient()
   const { toast } = useToast()
 
@@ -49,16 +54,24 @@ export function SeizureCell({ row, period, patientId, seizureTypes, onSaved }: S
     period === 'afternoon' ? row.afternoon_events :
     row.night_events
 
+  // Fecha com ESC
   useEffect(() => {
     if (!open) return
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false)
-        setDuringSleep(false)
-      }
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { setOpen(false); setDuringSleep(false) }
     }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [open])
+
+  // Trava scroll quando aberto
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
   }, [open])
 
   const getOrCreateDiaryDay = async (): Promise<string> => {
@@ -107,97 +120,143 @@ export function SeizureCell({ row, period, patientId, seizureTypes, onSaved }: S
     onSaved()
   }
 
+  const handleClose = () => { setOpen(false); setDuringSleep(false) }
+
   return (
-    <div ref={ref} className="relative w-full min-h-[48px] py-1.5 flex flex-col items-center justify-center gap-1">
+    <>
+      {/* ── Célula da tabela ── */}
+      <div className="relative w-full min-h-[48px] py-1.5 flex flex-col items-center justify-center gap-1">
 
-      {/* ── Símbolos EM LINHA HORIZONTAL centralizados ── */}
-      {events.length > 0 && (
-        <div className="flex flex-row flex-wrap items-center justify-center gap-x-2 gap-y-0.5 w-full">
-          {events.map(ev => (
-            <button
-              key={ev.id}
-              onClick={() => handleRemove(ev.id)}
-              title="Toque para remover"
-              className="inline-flex items-center gap-0.5 text-ink hover:text-red-400 transition-colors"
-            >
-              {/* Repete o símbolo a quantidade de vezes registrada */}
-              {Array.from({ length: ev.count }).map((_, i) => (
-                <SymbolSVG key={i} symbol={ev.seizure_type?.symbol ?? '+'} className="w-5 h-5" />
-              ))}
-              {ev.during_sleep && (
-                <span className="text-xs font-bold text-indigo-400">zz</span>
-              )}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* ── Botão + ── */}
-      <button
-        onClick={() => setOpen(o => !o)}
-        disabled={saving}
-        className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
-          open
-            ? 'bg-lilac-500 text-white shadow-focus'
-            : 'bg-lilac-50 border border-lilac-200 text-lilac-500 hover:bg-lilac-100'
-        }`}
-      >
-        <Plus className="w-3.5 h-3.5" />
-      </button>
-
-      {/* ── Popover ── */}
-      {open && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 bg-white rounded-2xl shadow-card-lg border border-surface-border p-3 w-60 animate-slide-down">
-
-          <p className="text-xs font-semibold text-ink-muted uppercase tracking-wide mb-2">Tipo de crise</p>
-          <div className="space-y-1">
-            {seizureTypes.map(type => (
+        {/* Símbolos em linha */}
+        {events.length > 0 && (
+          <div className="flex flex-row flex-wrap items-center justify-center gap-x-2 gap-y-0.5 w-full">
+            {events.map(ev => (
               <button
-                key={type.id}
-                onClick={() => handleAdd(type)}
-                disabled={saving}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-lilac-50 border border-transparent hover:border-lilac-200 transition-all text-left active:scale-95"
+                key={ev.id}
+                onClick={() => handleRemove(ev.id)}
+                title="Toque para remover"
+                className="inline-flex items-center gap-0.5 text-ink hover:text-red-400 transition-colors"
               >
-                <span className="text-ink flex-shrink-0">
-                  <SymbolSVG symbol={type.symbol} className="w-6 h-6" />
-                </span>
-                <span className="text-xs font-medium text-ink leading-tight flex-1">{type.name}</span>
-                {duringSleep && <span className="text-xs font-bold text-indigo-400 flex-shrink-0">zz</span>}
+                {Array.from({ length: ev.count }).map((_, i) => (
+                  <SymbolSVG key={i} symbol={ev.seizure_type?.symbol ?? '+'} className="w-5 h-5" />
+                ))}
+                {ev.during_sleep && (
+                  <span className="text-xs font-bold text-indigo-400">zz</span>
+                )}
               </button>
             ))}
           </div>
+        )}
 
-          {/* Toggle sono — abaixo da lista */}
-          <div className="mt-2 pt-2 border-t border-surface-border">
-            <button
-              onClick={() => setDuringSleep(d => !d)}
-              className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl border-2 transition-all ${
-                duringSleep
-                  ? 'border-indigo-400 bg-indigo-50'
-                  : 'border-surface-border hover:border-indigo-200 hover:bg-indigo-50/50'
-              }`}
-            >
-              <span className={`text-sm font-bold ${duringSleep ? 'text-indigo-500' : 'text-ink-light'}`}>zz</span>
-              <span className={`text-xs font-semibold flex-1 text-left ${duringSleep ? 'text-indigo-700' : 'text-ink-muted'}`}>
-                Durante o sono
-              </span>
-              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
-                duringSleep ? 'border-indigo-500 bg-indigo-500' : 'border-gray-300'
-              }`}>
-                {duringSleep && (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" className="w-2.5 h-2.5">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                )}
+        {/* Botão + */}
+        <button
+          onClick={() => setOpen(true)}
+          disabled={saving}
+          className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
+            open
+              ? 'bg-lilac-500 text-white shadow-focus'
+              : 'bg-lilac-50 border border-lilac-200 text-lilac-500 hover:bg-lilac-100'
+          }`}
+        >
+          <Plus className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      {/* ── Modal centralizado na tela ── */}
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-ink/30 backdrop-blur-sm animate-fade-in"
+            onClick={handleClose}
+          />
+
+          {/* Painel */}
+          <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-card-lg border border-surface-border animate-slide-up overflow-hidden">
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-surface-border">
+              <div>
+                <p className="text-xs font-semibold text-ink-muted uppercase tracking-wider">
+                  Dia {String(row.day).padStart(2, '0')} · {PERIOD_LABELS[period]}
+                </p>
+                <h2 className="font-display text-xl font-semibold text-ink mt-0.5">
+                  Registrar Crise
+                </h2>
               </div>
-            </button>
-          </div>
+              <button
+                onClick={handleClose}
+                className="w-9 h-9 rounded-xl bg-surface-muted flex items-center justify-center text-ink-muted hover:text-ink hover:bg-lilac-100 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-          <p className="text-xs text-ink-light mt-2 text-center">
-            Toque no símbolo para remover
-          </p>
+            {/* Tipos de crise */}
+            <div className="px-6 py-4">
+              <p className="text-sm font-semibold text-ink-muted mb-3">Tipo de crise</p>
+              <div className="space-y-2">
+                {seizureTypes.map(type => (
+                  <button
+                    key={type.id}
+                    onClick={() => handleAdd(type)}
+                    disabled={saving}
+                    className="w-full flex items-center gap-4 px-4 py-4 rounded-2xl hover:bg-lilac-50 border-2 border-transparent hover:border-lilac-200 transition-all text-left active:scale-[0.98]"
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-surface-muted flex items-center justify-center flex-shrink-0">
+                      <SymbolSVG symbol={type.symbol} className="w-7 h-7" />
+                    </div>
+                    <span className="text-base font-medium text-ink leading-tight flex-1">
+                      {type.name}
+                    </span>
+                    {duringSleep && (
+                      <span className="text-sm font-bold text-indigo-400 flex-shrink-0">zz</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Toggle durante o sono */}
+            <div className="px-6 pb-6">
+              <button
+                onClick={() => setDuringSleep(d => !d)}
+                className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl border-2 transition-all ${
+                  duringSleep
+                    ? 'border-indigo-400 bg-indigo-50'
+                    : 'border-surface-border hover:border-indigo-200 hover:bg-indigo-50/40'
+                }`}
+              >
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                  duringSleep ? 'bg-indigo-100' : 'bg-surface-muted'
+                }`}>
+                  <span className={`text-xl font-black ${duringSleep ? 'text-indigo-500' : 'text-ink-light'}`}>
+                    zz
+                  </span>
+                </div>
+                <span className={`text-base font-semibold flex-1 text-left ${
+                  duringSleep ? 'text-indigo-700' : 'text-ink-muted'
+                }`}>
+                  Durante o sono
+                </span>
+                {/* Toggle visual */}
+                <div className={`w-12 h-6 rounded-full transition-all flex-shrink-0 ${
+                  duringSleep ? 'bg-indigo-500' : 'bg-gray-200'
+                }`}>
+                  <div className={`w-5 h-5 rounded-full bg-white shadow mt-0.5 transition-all ${
+                    duringSleep ? 'ml-6' : 'ml-0.5'
+                  }`} />
+                </div>
+              </button>
+
+              <p className="text-xs text-ink-light mt-3 text-center">
+                Toque no símbolo na tabela para remover
+              </p>
+            </div>
+          </div>
         </div>
       )}
-    </div>
+    </>
   )
 }
